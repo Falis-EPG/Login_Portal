@@ -1,4 +1,3 @@
-![image](https://github.com/user-attachments/assets/b5a53148-4dd3-43fd-ac02-ddb62dffb2a1)### Documentação Técnica: Portal do Colaborador - Tela de Login
 
 #### 1. Introdução
 
