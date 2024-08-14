@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="../../src/styles/calendar.css">
+    <style>
+        body {
+            margin: 40px 10px;
+            padding: 0;
+            font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+
+        #calendar {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* Estilo básico para o modal */
+        #eventModal {
+            display: none;
+            /* Oculta o modal por padrão */
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.504);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <button class="close-btn" onclick="toggleSidebar()">&#9776;</button>
+        <nav>
+            <ul><br><br>
+                <a href="../General/general.html">
+                    <li class="btn_sidebar">Home</li>
+                </a>
+                <a href="#section1">
+                    <li class="btn_sidebar">Em Breve</li>
+                </a>
+                <a href="selectRoom.html">
+                    <li class="btn_sidebar">Agendamento Sala de Reunião</li>
+                </a>
+                <a href="https://app.pipefy.com/organizations/301095341/interfaces/922dbb04-623c-40f9-830a-056873561430">
+                    <li class="btn_sidebar">Chamados PipeFy</li>
+                </a>
+                <a href="../../index.html">
+                    <li class="btn_sidebar">Sair</li>
+                </a>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Calendário -->
+    <h1 class="h1Txt">Sala de Reunião Secundária</h1>
+    <div id='calendar'></div>
+
+
+    <!-- Modal de descritivo de evento-->
+    <div id="eventDetailsModal">
+        <div class="modal-content">
+            <span class="close-details">&times;</span>
+            <h2>Detalhes do Evento</h2>
+            <p><strong>Título:</strong> <span id="detailTitle"></span></p>
+            <p><strong>Responsável:</strong> <span id="detailResponsible"></span></p>
+            <p><strong>Participantes:</strong> <span id="detailParticipants"></span></p>
+            <p><strong>Início:</strong> <span id="detailStart"></span></p>
+            <p><strong>Fim:</strong> <span id="detailEnd"></span></p>
+            <p><strong>Descrição:</strong> <span id="detailDescription"></span></p>
+        </div>
+    </div>
+
+    <!-- Modal para adicionar evento -->
+    <div id="eventModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Adicionar Evento</h2>
+            <form id="eventForm">
+                <label for="title" class="inputLabel">Título do Evento:</label><br>
+                <input type="text" id="title" name="title" required class="inputs"><br><br>
+
+                <label for="responsible" class="inputLabel">Responsável:</label><br>
+                <input type="text" id="responsible" name="responsible" required class="inputs"><br><br>
+
+                <label for="participants" class="inputLabel">Demais Participantes:</label><br>
+                <input type="text" id="participants" name="participants" class="inputs"><br><br>
+
+                <label for="start" class="inputLabel">Hora de Início:</label><br>
+                <input type="time" id="start" name="start" required class="inputs"><br><br>
+
+                <label for="end" class="inputLabel">Hora de Finalização:</label><br>
+                <input type="time" id="end" name="end" required class="inputs"><br><br>
+
+                <label for="description" class="inputLabel">Descrição:</label><br>
+                <textarea id="description" name="description" class="inputs"></textarea><br><br>
+
+                <button type="submit" id="confirmtionButton">Confirmar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        }
+        document.addEventListener("DOMContentLoaded", function () {
+            const token = sessionStorage.getItem('userToken');
+            if (token) {
+                fetch('http://3.226.151.106:5000/verify_token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            window.location.href = '../../index.html'; // Redireciona para a tela de login se o token não for válido
+                            alert('Token de acesso inválido');
+                        } else {
+                            // Código de inicialização do calendário e eventos aqui
+                            var calendarEl = document.getElementById('calendar');
+                            var eventModal = document.getElementById('eventModal');
+                            var closeModal = document.querySelector('.close');
+                            var eventDetailsModal = document.getElementById('eventDetailsModal');
+                            var closeDetailsModal = document.querySelector('.close-details');
+                            var form = document.getElementById('eventForm');
+                            var selectedDate;
+
+                            var calendar = new FullCalendar.Calendar(calendarEl, {
+                                initialView: 'dayGridMonth',
+                                editable: true,
+                                selectable: true,
+                                businessHours: true,
+                                dayMaxEvents: true,
+                                events: function (fetchInfo, successCallback, failureCallback) {
+                                    fetch('http://3.226.151.106:5000/consultEventMeetingRoom02')
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            console.log(data);
+                                            var events = data.map(event => {
+                                                return {
+                                                    title: event.title,
+                                                    start: event.START,
+                                                    end: event.end,
+                                                    extendedProps: {
+                                                        responsible: event.responsible,
+                                                        participants: event.participants,
+                                                        description: event.description
+                                                    }
+                                                };
+                                            });
+                                            console.log(events);
+                                            successCallback(events);
+                                        })
+                                        .catch(error => {
+                                            console.error('Erro ao buscar eventos:', error);
+                                            failureCallback(error);
+                                        });
+                                },
+                                select: function (info) {
+                                    selectedDate = info.startStr;
+                                    eventModal.style.display = 'block';
+                                },
+                                eventContent: function (arg) {
+                                    let content = document.createElement('div');
+                                    content.classList.add('fc-event-content');
+
+                                    let title = document.createElement('div');
+                                    title.innerHTML = `<b>${arg.event.title}</b>`;
+                                    title.classList.add('fc-event-title');
+
+                                    let timeRange = document.createElement('div');
+                                    timeRange.innerHTML = `<i>${new Date(arg.event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(arg.event.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</i>`;
+                                    timeRange.classList.add('fc-event-time');
+
+                                    content.appendChild(title);
+                                    content.appendChild(timeRange);
+
+                                    content.addEventListener('click', function () {
+                                        document.getElementById('detailTitle').textContent = arg.event.title;
+                                        document.getElementById('detailResponsible').textContent = arg.event.extendedProps.responsible;
+                                        document.getElementById('detailParticipants').textContent = arg.event.extendedProps.participants;
+                                        document.getElementById('detailStart').textContent = new Date(arg.event.start).toLocaleString();
+                                        document.getElementById('detailEnd').textContent = new Date(arg.event.end).toLocaleString();
+                                        document.getElementById('detailDescription').textContent = arg.event.extendedProps.description;
+
+                                        eventDetailsModal.style.display = 'block';
+                                    });
+
+                                    return { domNodes: [content] };
+                                }
+                            });
+
+                            calendar.render();
+
+                            closeDetailsModal.onclick = function () {
+                                eventDetailsModal.style.display = 'none';
+                            }
+
+                            closeModal.onclick = function () {
+                                eventModal.style.display = 'none';
+                            }
+
+                            window.onclick = function (event) {
+                                if (event.target == eventModal) {
+                                    eventModal.style.display = 'none';
+                                } else if (event.target == eventDetailsModal) {
+                                    eventDetailsModal.style.display = 'none';
+                                }
+                            }
+
+                            form.onsubmit = function (e) {
+                                e.preventDefault();
+
+                                var title = document.getElementById('title').value;
+                                var responsible = document.getElementById('responsible').value;
+                                var participants = document.getElementById('participants').value;
+                                var start = document.getElementById('start').value;
+                                var end = document.getElementById('end').value;
+                                var description = document.getElementById('description').value;
+
+                                fetch('http://3.226.151.106:5000/addEventMeetingRoom02', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        date: selectedDate,
+                                        title: title,
+                                        responsible: responsible,
+                                        participants: participants,
+                                        start: start,
+                                        end: end,
+                                        description: description
+                                    })
+                                })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            eventModal.style.display = 'none';
+                                            form.reset();
+                                            calendar.refetchEvents();
+                                        } else {
+                                            alert('Erro ao adicionar evento');
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Erro:', error);
+                                    });
+                            }
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        alert(error)
+                        window.location.href = '../../index.html'; // Redireciona para a tela de login em caso de erro
+                    });
+            } else {
+                window.location.href = '../../index.html'; // Redireciona para a tela de login se não houver token
+            }
+        });
+
+
+    </script>
+
+</body>
+
+</html>
