@@ -7,55 +7,6 @@
     <link rel="stylesheet" href="../../src/styles/general.css">
 </head>
 <body>
-    <div class="sidebar">
-        <button class="close-btn" onclick="toggleSidebar()">&#9776;</button>
-        <nav>
-            <ul><br><br>
-                <a href="#"><li class="btn_sidebar">Home</li></a>
-                <a href="#section1"><li class="btn_sidebar">Em Breve</li></a>
-                <a href="../meetRoom/selectRoom.html">
-                    <li class="btn_sidebar">Agendamento Sala de Reunião</li>
-                </a>
-                <a href="https://app.pipefy.com/organizations/301095341/interfaces/922dbb04-623c-40f9-830a-056873561430"><li class="btn_sidebar">Chamados PipeFy</li></a>
-                <a href="../../index.html"><li class="btn_sidebar">Sair</li></a>
-            </ul>
-        </nav>
-    </div>
-
-    <div class="content">
-
-
-
-        <div id="section1" class="section">
-            <h1>Seja Bem Vindo ao <br><br> Portal do Colaborador FertMinas</h1>
-            <p class="welcome-p">Esta é a nova plataforma da FertMinas, criada e pensada em você. Será por aqui que vocês poderão visualizar comunicados, notícias, avisos, mensagens, ver os aniversáriantes do mes, eventos... e mais.
-                <br><br>A equipe de T.I está preparado com muito carinho um portal completo, com ferramentas e automações que vao facilitar o dia a dia de cada um de vocês, oferecendo ferramentas personalizadas, facilitar a comunicação interna, 
-                automações de serviços, comunicação entre setores... <br><br>
-                A equipe de T.I está no processo de contrução, então sempre que alguma nova ferramenta surgir, seremos nós que iremos avisa-los e passar todo o treinamento necessário.
-            </p>
-            <h3>Do setor de Tecnologia da Informação, com muito carinho, para você! </h3>
-        </div>
-
-
-
-        <div id="section2" class="section">
-            <h1 class="section-title">Comunicados</h1><br><br>
-            <div class="comunicados-sections">
-                <img src="../../src/images/comunicado-1907.jpg" alt="comunicado para zelo e cuidado dos veículos da Frota da FertMinas" class="comunicados">
-                <img src="../../src/images/comunicado-1907-01.jpg" alt="comunicado avisando sobre recentes paredes pintadas no administrativo" class="comunicados">
-                <img src="../../src/images/comunicado-1907-02.jpg" alt="comunicado solicitando a não retirada das cadeiras da sala de reunião." class="comunicados">
-            </div>
-        </div>
-
-
-
-        <div id="section3" class="section">
-            <h1 class="section-title">Aniversariantes do Mês</h1><br><br>
-            <div class="comunicados-sections">
-                <img src="../../src/images/aniversariantes-072024.jpg" alt="aniversariantes do mes" class="aniversariantes">
-            </div>
-        </div>
-    </div>
 
 
 
@@ -68,7 +19,7 @@
         document.addEventListener("DOMContentLoaded", function() {
             const token = sessionStorage.getItem('userToken');
             if (token) {
-                fetch('http://3.226.151.106:5000/verify_token', {
+                fetch('http://portal_IP/verify_token', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
