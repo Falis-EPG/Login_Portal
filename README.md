@@ -3,6 +3,9 @@
 
 Este documento detalha a implementação técnica da tela de login do Portal do Colaborador. A tela é responsável por gerenciar a autenticação dos usuários, armazenar tokens de sessão, e validar acessos subsequentes às diferentes páginas do portal. O código foi desenvolvido utilizando HTML, JavaScript, e Python, com integração ao banco de dados MySQL para verificação das credenciais.
 
+![image](https://github.com/user-attachments/assets/82fc017d-ece2-443b-96da-7237d2976d5b)
+
+
 #### 2. Estrutura da Tela de Login
 
 A tela de login é composta por dois campos de entrada para o usuário: **Username** e **Password**, além de um botão de login. A estrutura em HTML é a seguinte:
